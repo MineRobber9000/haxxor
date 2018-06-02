@@ -1,11 +1,15 @@
 all: game.gb
 
-game.o: game.asm
-	rgbasm -o game.o game.asm
+SRC:=$(wildcard src/*.asm)
+OBJ:=$(SRC:asm=o)
 
-game.gb: game.o
+%.o: %.asm
+	rgbasm -iinc/ -o $*.o $*.asm
+
+game.gb: $(OBJ)
 	rgblink -n game.sym -m $*.map -o $@ $<
-	rgbfix -jv -i XXXX -k XX -l 0x33 -m 0x01 -p 0 -r 0 -t game $@
+	rgbfix -jv -k XX -l 0x33 -m 0x01 -p 0 -r 0 -t HAXXORGB $@
 
 clean:
-	rm -f game.o game.gb
+	rm -f game.gb game.sym
+	rm -f $(OBJ)
