@@ -1,3 +1,4 @@
+INCLUDE "gbhw.inc"
 ; rst vectors
 SECTION "rst00",ROM0[0]
     ret
@@ -40,6 +41,18 @@ SECTION "romheader",ROM0[$100]
 Section "start",ROM0[$150]
 
 Start:
+	di
+	call DisableLCD
+	ld hl,$8000
+	ld bc,$01A0
+	ld a,$00
+	call FillMem
+	ld hl,$9800
+	ld bc,$0233
+	call FillMem
+	ld a,[wScratch1]
+	ld [rLCDC],a
+	ei
 .loop
     halt
     jr .loop
@@ -47,3 +60,27 @@ Start:
 VBlank:
     reti
 
+DisableLCD:
+	ld a,[rLCDC]
+	rlca
+	ret nc
+.loop	ld a,[rLY]
+	cp 145
+	jr nz,.loop
+	ld a,[rLCDC]
+	ld [wScratch1],a
+	res 7,a
+	ld [rLCDC],a
+	ret
+
+FillMem:
+	inc b
+	inc c
+	jr .skip
+.loop	ld [hl],a
+	inc hl
+.skip	dec c
+	jr nz,.loop
+	dec b
+	jr nz,.loop
+	ret
